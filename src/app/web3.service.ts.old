@@ -10,58 +10,63 @@ var web3 = new Web3();
 @Injectable()
 export class Web3Service {
     private contractInstance: any;
-    private contractLocation: string;
     private web3Instance: any;
 
     // Application Binary Interface so we can use the question contract
 
 
     // Contract get functions must be async
-    getRecentContract(): Promise<any> {
+    getBallots(): Observable<any> {
 
-        let p = new Promise<any>((resolve, reject) => {
-            this.initializeContractLocation().then(function(cntrLoc){
-              this.getContract(cntrLoc).then(function(ctrct){
-                resolve(ctrct);
-              });
+
+        return new Observable(observer => {
+          this.getContract().then(function(contract){
+            console.log(contract);
+            contract.methods['size']().call(
+            function (err,size){
+              console.log('size');
+              console.log(size);
+              for(var i=0;i<size;i++){
+                contract.methods['results'](i).call(
+                function (err,winner){
+                  console.log('size');
+                  console.log(utils.hex2a(winner));
+                  observer.next({
+                    id: i,
+                    name: utils.hex2a(winner)
+                  });
+                });
+              }
             });
+          })
         });
-        return p;
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    getContractLocation(): Promise<string>{
-      if(this.contractLocation.length > 1){
-          return Promise.resolve(this.contractLocation);
-      }else{
-          return this.initializeContractLocation();
-      }
 
     }
 
-    getContract(contractLocation:string): Promise<any> {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    getContract(): Promise<any> {
         if (typeof this.contractInstance !== 'undefined') {
-
             return Promise.resolve(this.contractInstance);
         }else{
             var ABI  = [{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"results","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"ballots","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getWinner","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"size","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[],"name":"getBallot","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"weights","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"name","type":"bytes32"}],"name":"addWinner","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"added","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"s","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":false,"name":"ballot","type":"address"},{"indexed":false,"name":"owner","type":"address"},{"indexed":false,"name":"index","type":"uint256"}],"name":"BallotCreated","type":"event"}];
-
-            return this.initializeContract(ABI,contractLocation);
+            return this.initializeContract('0x332144b172b349a0e5d0a1471db5586d357aaeb0',ABI);
         }
     }
 
@@ -92,32 +97,16 @@ export class Web3Service {
         return p;
     }
 
-    initializeContract(ABI: any,contractLocation: string): Promise<any> {
+    initializeContract(contractHash: string,ABI: any): Promise<any> {
         let p = new Promise<any>((resolve, reject) => {
           this.getWeb3().then(function(result){
+            console.log(web3.eth);
 
-            var contract = new web3.eth.Contract(ABI,contractLocation);
+
+            var contract = new web3.eth.Contract(ABI,contractHash);
             console.log(contract);
+            this.contractInstance = contract;
             resolve(contract);
-          });
-        });
-        return p;
-    }
-
-
-    initializeContractLocation(): Promise<string> {
-        let p = new Promise<string>((resolve, reject) => {
-          this.getWeb3().then(function(result){
-
-
-              var ABI = [{"constant":false,"inputs":[{"name":"election","type":"address"}],"name":"setRecentElection","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"recentElection","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"}];
-              this.initializeContract(ABI,'0x225663ec2006640e2624346989f4ea570948a1fc').then(function(refContract){
-
-                refContract.methods['recentElection']().call(
-                function (err,recentElection){
-                  resolve(recentElection);
-                });
-              });
           });
         });
         return p;

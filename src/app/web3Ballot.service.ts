@@ -4,11 +4,13 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 import 'rxjs';
+import { Utils } from './utils';
+var utils = new Utils();
 
 import { Candidate } from './candidate';
 import { MessageService } from './message.service';
 import { Web3Service } from './web3.service';
-import Web3 = require('web3');
+var Web3 = require('web3');
 var web3 = new Web3();
 
 const httpOptions = {
@@ -24,18 +26,47 @@ export class BallotService {
     private web3Service: Web3Service,
     private messageService: MessageService) { }
 
-  /** GET ballots from the server */
-  getCandidates (): Observable<Candidate[]> {
-    var candidates = [];
-    console.log("here");
-    return new Observable(observer => {
-      this.web3Service.getBallots().subscribe(candidate => {
-        candidates.push(candidate);
-        console.log(candidates);
-        observer.next(candidates);
+
+
+
+
+    // Contract get functions must be async
+    getBallots(): Observable<any> {
+        return new Observable(observer => {
+          this.web3Service.getRecentContract().then(function(contract){
+            console.log(contract);
+            contract.methods['size']().call(
+            function (err,size){
+              console.log('size');
+              console.log(size);
+              for(var i=0;i<size;i++){
+                contract.methods['results'](i).call(
+                function (err,winner){
+                  console.log('size');
+                  console.log(utils.hex2a(winner));
+                  observer.next({
+                    id: i,
+                    name: utils.hex2a(winner)
+                  });
+                });
+              }
+            });
+          })
+        });
+
+    }
+    /** GET ballots from the server */
+    getCandidates (): Observable<Candidate[]> {
+      var candidates = [];
+      console.log("here");
+      return new Observable(observer => {
+        this.getBallots().subscribe(candidate => {
+          candidates.push(candidate);
+          console.log(candidates);
+          observer.next(candidates);
+        });
       });
-    });
-  }
+    }
 
 
   /** GET ballot by id. Return `undefined` when id not found *
