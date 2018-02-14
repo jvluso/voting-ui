@@ -1,7 +1,13 @@
 <h2>Ballot</h2>
 
 <ul class="candidates">
-  <li *ngFor="let candidate of candidates">
+  <li *ngFor="let candidate of candidates" (click)="onSelect(candidate)"
+      [class.selected]="candidate === selectedCandidate">
       <span class="badge">{{candidate.id}}</span> {{candidate.name}}
   </li>
 </ul>
+<div *ngIf="canGetBallot">
+  <button (click)="checkCanGetBallot()">
+    get ballot
+  </button>
+</div>

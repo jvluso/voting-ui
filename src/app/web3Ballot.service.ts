@@ -29,132 +29,86 @@ export class BallotService {
 
 
 
+    // Contract get functions must be async
+    getBallot(): Promise<any> {
+        return this.web3Service.getRecentContract();
+    }
 
     // Contract get functions must be async
-    getBallots(): Observable<any> {
+    getCandidate(): Observable<any> {
         return new Observable(observer => {
-          this.web3Service.getRecentContract().then(function(contract){
-            console.log(contract);
-            contract.methods['size']().call(
-            function (err,size){
-              console.log('size');
-              console.log(size);
+          this.getBallot().then((contract) => {
+            contract.methods['size']().call((err,size) => {
               for(var i=0;i<size;i++){
-                contract.methods['results'](i).call(
-                function (err,winner){
-                  console.log('size');
-                  console.log(utils.hex2a(winner));
+                contract.methods['getCandidate'](i).call((err,candidate) => {
                   observer.next({
-                    id: i,
-                    name: utils.hex2a(winner)
+                    id: candidate[1],
+                    name: utils.hex2a(candidate[0])
                   });
                 });
               }
             });
           })
         });
-
     }
+
     /** GET ballots from the server */
     getCandidates (): Observable<Candidate[]> {
       var candidates = [];
-      console.log("here");
       return new Observable(observer => {
-        this.getBallots().subscribe(candidate => {
+        this.getCandidate().subscribe(candidate => {
           candidates.push(candidate);
-          console.log(candidates);
           observer.next(candidates);
         });
       });
     }
 
 
-  /** GET ballot by id. Return `undefined` when id not found *
-  getBallotNo404<Data>(id: number): Observable<Ballot> {
-    const url = `${this.ballotsUrl}/?id=${id}`;
-    return this.http.get<Ballot[]>(url)
-      .pipe(
-        map(ballots => ballots[0]), // returns a {0|1} element array
-        tap(h => {
-          const outcome = h ? `fetched` : `did not find`;
-          this.log(`${outcome} ballot id=${id}`);
-        }),
-        catchError(this.handleError<Ballot>(`getBallot id=${id}`))
-      );
-  }
-
-  /** GET ballot by id. Will 404 if id not found
-  getBallot(id: number): Observable<Ballot> {
-    const url = `${this.ballotsUrl}/${id}`;
-    return this.http.get<Ballot>(url).pipe(
-      tap(_ => this.log(`fetched ballot id=${id}`)),
-      catchError(this.handleError<Ballot>(`getBallot id=${id}`))
-    );
-  }
-
-  /* GET ballots whose name contains search term
-  searchBallots(term: string): Observable<Ballot[]> {
-    if (!term.trim()) {
-      // if not search term, return empty ballot array.
-      return of([]);
+    /** GET ballots from the server */
+    checkCanGetBallot (): Promise<boolean> {
+      let p = new Promise<any>((resolve, reject) => {
+        return this.getBallot().then((contract) => {
+          var acc = this.web3Service.web3Instance.eth.accounts[0];
+          contract.methods['getBallot']().call(
+            {
+              from: acc,
+              gas:4700000
+            },
+            (err,res) =>{
+            console.log(err);
+            console.log(res);
+            if(err){
+              resolve(false);
+            }else{
+              resolve(true);
+            }
+          });
+        });
+      });
+      return p;
     }
-    return this.http.get<Ballot[]>(`api/ballots/?vote=${term}`).pipe(
-      tap(_ => this.log(`found ballots matching "${term}"`)),
-      catchError(this.handleError<Ballot[]>('searchBallots', []))
-    );
-  }
 
-  //////// Save methods //////////
-
-  /** POST: add a new ballot to the server
-  addBallot (ballot: Ballot): Observable<Ballot> {
-    return this.http.post<Ballot>(this.ballotsUrl, ballot, httpOptions).pipe(
-      tap((ballot: Ballot) => this.log(`added ballot w/ id=${ballot.id}`)),
-      catchError(this.handleError<Ballot>('addBallot'))
-    );
-  }
-
-  /** DELETE: delete the ballot from the server
-  deleteBallot (ballot: Ballot | number): Observable<Ballot> {
-    const id = typeof ballot === 'number' ? ballot : ballot.id;
-    const url = `${this.ballotsUrl}/${id}`;
-
-    return this.http.delete<Ballot>(url, httpOptions).pipe(
-      tap(_ => this.log(`deleted ballot id=${id}`)),
-      catchError(this.handleError<Ballot>('deleteBallot'))
-    );
-  }
-
-  /** PUT: update the ballot on the server
-  updateBallot (ballot: Ballot): Observable<any> {
-    return this.http.put(this.ballotsUrl, ballot, httpOptions).pipe(
-      tap(_ => this.log(`updated ballot id=${ballot.id}`)),
-      catchError(this.handleError<any>('updateBallot'))
-    );
-  }
-
-  /**
-   * Handle Http operation that failed.
-   * Let the app continue.
-   * @param operation - name of the operation that failed
-   * @param result - optional value to return as the observable result
-   *
-  private handleError<T> (operation = 'operation', result?: T) {
-    return (error: any): Observable<T> => {
-
-      // TODO: send the error to remote logging infrastructure
-      console.error(error); // log to console instead
-
-      // TODO: better job of transforming error for user consumption
-      this.log(`${operation} failed: ${error.message}`);
-
-      // Let the app keep running by returning an empty result.
-      return of(result as T);
-    };
-  }
-
-  /** Log a BallotService message with the MessageService *
-  private log(message: string) {
-    this.messageService.add('BallotService: ' + message);
-  }*/
+    /** GET ballots from the server */
+    requestBallot (): Promise<boolean> {
+      let p = new Promise<any>((resolve, reject) => {
+        return this.getBallot().then((contract) => {
+          console.log(contract)
+          contract.methods['getBallot']().call(
+            {
+              from:'0x2Da0565Ef4A474a6c6496b62D3CB974f5A6ea526',
+              gas:300000
+            },
+            (err,res) =>{
+            console.log(err);
+            console.log(res);
+            if(err){
+              resolve(false);
+            }else{
+              resolve(true);
+            }
+          });
+        });
+      });
+      return p;
+    }
 }

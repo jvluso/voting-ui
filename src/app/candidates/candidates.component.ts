@@ -15,6 +15,7 @@ export class CandidatesComponent implements OnInit {
 
   ngOnInit() {
     this.getCandidates();
+    this.checkCanGetBallot();
   }
 
   getCandidates(): void {
@@ -22,24 +23,25 @@ export class CandidatesComponent implements OnInit {
       .subscribe({
         next: candidates => {
           this.candidates = candidates;
-          console.log("here");
         },
         error: err => console.log(err),
       });
   }
-/*
-  add(vote: string): void {
-    vote = vote.trim();
-    if (!vote) { return; }
-    this.candidateService.addCandidate({ vote } as Candidate)
-      .subscribe(candidate => {
-        this.candidates.push(candidate);
-      });
+
+
+  selectedCandidate: Candidate;
+
+  onSelect(candidate: Candidate): void {
+      this.selectedCandidate = candidate;
   }
 
-  delete(candidate: Candidate): void {
-    this.candidates = this.candidates.filter(h => h !== candidate);
-    this.candidateService.deleteCandidate(candidate).subscribe();
-  }*/
+  canGetBallot: boolean;
+
+  checkCanGetBallot(): void {
+      this.ballotService.checkCanGetBallot().then((res) => {
+        console.log(res);
+        this.canGetBallot = res;
+      });
+  }
 
 }

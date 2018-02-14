@@ -21,6 +21,11 @@
   left: .1em;
 }
 
+.selected {
+  background-color: #CFD8DC !important;
+  color: white;
+}
+
 .candidates a {
   color: #888;
   text-decoration: none;
