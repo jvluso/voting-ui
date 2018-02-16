@@ -6,8 +6,8 @@
       <span class="badge">{{candidate.id}}</span> {{candidate.name}}
   </li>
 </ul>
-<div *ngIf="canGetBallot">
-  <button (click)="checkCanGetBallot()">
-    get ballot
+<div *ngIf="canVote">
+  <button (click)="vote()">
+    vote
   </button>
 </div>

@@ -1,0 +1,8 @@
+<h2>Election</h2>
+
+<ul class="candidates">
+  <li *ngFor="let candidate of candidates"
+      [class.selected]="candidate.name == winningCandidate">
+      <span class="badge">{{candidate.id}}</span> {{candidate.name}}
+  </li>
+</ul>

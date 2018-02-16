@@ -63,24 +63,17 @@ export class BallotService {
       });
     }
 
-
     /** GET ballots from the server */
-    checkCanGetBallot (): Promise<boolean> {
-      let p = new Promise<any>((resolve, reject) => {
-        return this.getBallot().then((contract) => {
-          var acc = this.web3Service.web3Instance.eth.accounts[0];
-          contract.methods['getBallot']().call(
-            {
-              from: acc,
-              gas:4700000
-            },
-            (err,res) =>{
-            console.log(err);
-            console.log(res);
+    getWinningCandidate (): Promise<string> {
+      let p = new Promise<string>((resolve, reject) => {
+        this.getBallot().then((contract) => {
+          console.log(contract);
+          contract.methods['getWinner']().call((err,res) =>{
+            console.log('gotWinner');
             if(err){
-              resolve(false);
+              resolve('');
             }else{
-              resolve(true);
+              resolve(utils.hex2a(res));
             }
           });
         });
@@ -88,24 +81,51 @@ export class BallotService {
       return p;
     }
 
+
     /** GET ballots from the server */
-    requestBallot (): Promise<boolean> {
+    checkCanVote (): Promise<boolean> {
       let p = new Promise<any>((resolve, reject) => {
-        return this.getBallot().then((contract) => {
-          console.log(contract)
-          contract.methods['getBallot']().call(
-            {
-              from:'0x2Da0565Ef4A474a6c6496b62D3CB974f5A6ea526',
-              gas:300000
-            },
-            (err,res) =>{
-            console.log(err);
-            console.log(res);
-            if(err){
-              resolve(false);
-            }else{
-              resolve(true);
-            }
+        this.getBallot().then((contract) => {
+          this.web3Service.web3Instance.eth.getAccounts((err,acc) => {
+            contract.methods['vote'](0).call(
+              {
+                from: acc[0],
+                gas:4700000
+              },
+              (err,res) =>{
+              console.log(err);
+              console.log(res);
+              if(err){
+                resolve(false);
+              }else{
+                resolve(true);
+              }
+            });
+          });
+        });
+      });
+      return p;
+    }
+
+    /** GET ballots from the server */
+    vote (choice: Candidate): Promise<boolean> {
+      let p = new Promise<any>((resolve, reject) => {
+        this.getBallot().then((contract) => {
+          this.web3Service.web3Instance.eth.getAccounts((err,acc) => {
+            contract.methods['vote'](choice.id).send(
+              {
+                from: acc[0],
+                gas:4700000
+              },
+              (err,res) =>{
+              console.log(err);
+              console.log(res);
+              if(err){
+                resolve(false);
+              }else{
+                resolve(true);
+              }
+            });
           });
         });
       });

@@ -15,7 +15,7 @@ export class CandidatesComponent implements OnInit {
 
   ngOnInit() {
     this.getCandidates();
-    this.checkCanGetBallot();
+    this.checkCanVote();
   }
 
   getCandidates(): void {
@@ -35,12 +35,19 @@ export class CandidatesComponent implements OnInit {
       this.selectedCandidate = candidate;
   }
 
-  canGetBallot: boolean;
+  canVote: boolean;
 
-  checkCanGetBallot(): void {
-      this.ballotService.checkCanGetBallot().then((res) => {
+  checkCanVote(): void {
+      this.ballotService.checkCanVote().then((res) => {
         console.log(res);
-        this.canGetBallot = res;
+        this.canVote = res;
+      });
+  }
+
+  vote(): void {
+      this.ballotService.vote(this.selectedCandidate).then((res) => {
+        console.log(res);
+        this.canVote = res;
       });
   }
 

@@ -4,7 +4,6 @@ import { FormsModule }    from '@angular/forms';
 import { HttpClientModule }    from '@angular/common/http';
 
 import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
-import { InMemoryDataService }  from './in-memory-data.service';
 
 import { AppRoutingModule }     from './app-routing.module';
 
@@ -19,6 +18,7 @@ import { Web3Service }       from './web3.service';
 import { Utils }       from './utils';
 import { MessagesComponent }    from './messages/messages.component';
 import { CandidatesComponent } from './candidates/candidates.component';
+import { ElectionDetailsComponent } from './election-details/election-details.component';
 
 @NgModule({
   imports: [
@@ -34,6 +34,7 @@ import { CandidatesComponent } from './candidates/candidates.component';
     //BallotDetailComponent,
     MessagesComponent,
     CandidatesComponent,
+    ElectionDetailsComponent,
     //BallotSearchComponent
   ],
   providers: [ BallotService, MessageService, Web3Service, Utils ],
