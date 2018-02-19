@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 
-import { Candidate } from '../candidate';
-import { BallotService } from '../ballot.service';
+import { Candidate } from '../classes/candidate';
+import { Election } from '../classes/election';
+import { BallotService } from '../services/ballot.service';
+import { Web3Service } from '../web3/web3.service';
 
 @Component({
   selector: 'app-election-details',
@@ -9,34 +11,39 @@ import { BallotService } from '../ballot.service';
   styleUrls: ['./election-details.component.css']
 })
 export class ElectionDetailsComponent implements OnInit {
-  candidates: Candidate[];
+  election: Election;
 
-  constructor(private ballotService: BallotService) { }
+  constructor(
+    private web3Service: Web3Service,
+    private ballotService: BallotService) { }
 
   ngOnInit() {
-    this.getCandidates();
-    this.getWinningCandidate();
+    this.election = this.ballotService.getNullElection();
+    this.ballotService.getRecentElection().then((election) => {
+      this.election = election;
+      this.getCandidates();
+      this.getWinningCandidate();
+      this.getElection();
+    });
+
   }
 
   getCandidates(): void {
-    this.ballotService.getCandidates()
-      .subscribe({
-        next: candidates => {
-          this.candidates = candidates;
-        },
-        error: err => console.log(err),
-      });
+    this.ballotService.getCandidates(this.election);
   }
 
+  getElection(): void {
+    this.ballotService.getName(this.election);
+  }
 
   winningCandidate: string;
 
   getWinningCandidate(): void {
     console.log("requestWinningCandidate");
-      this.ballotService.getWinningCandidate().then((res) => {
-        console.log("getWinningCandidate");
-        console.log(res);
-        this.winningCandidate = res;
-      });
+    this.ballotService.getWinningCandidate(this.election).then((res) => {
+      console.log("getWinningCandidate");
+      console.log(res);
+      this.winningCandidate = res;
+    });
   }
 }

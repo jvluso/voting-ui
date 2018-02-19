@@ -1,7 +1,7 @@
 <h2>Ballot</h2>
 
 <ul class="candidates">
-  <li *ngFor="let candidate of candidates" (click)="onSelect(candidate)"
+  <li *ngFor="let candidate of election.candidates" (click)="onSelect(candidate)"
       [class.selected]="candidate === selectedCandidate">
       <span class="badge">{{candidate.id}}</span> {{candidate.name}}
   </li>

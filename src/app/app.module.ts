@@ -8,17 +8,14 @@ import { HttpClientInMemoryWebApiModule } from 'angular-in-memory-web-api';
 import { AppRoutingModule }     from './app-routing.module';
 
 import { AppComponent }         from './app.component';
-import { DashboardComponent }   from './dashboard/dashboard.component';
-//import { BallotDetailComponent }  from './ballot-detail/ballot-detail.component';
-import { BallotsComponent }      from './ballots/ballots.component';
-//import { BallotSearchComponent }  from './ballot-search/ballot-search.component';
-import { BallotService }          from './ballot.service';
-import { MessageService }       from './message.service';
-import { Web3Service }       from './web3.service';
+import { BallotService }          from './services/ballot.service';
+import { MessageService }       from './messages/message.service';
+import { Web3Service }       from './web3/web3.service';
 import { Utils }       from './utils';
 import { MessagesComponent }    from './messages/messages.component';
 import { CandidatesComponent } from './candidates/candidates.component';
 import { ElectionDetailsComponent } from './election-details/election-details.component';
+import { ReferenceComponent } from './reference/reference.component';
 
 @NgModule({
   imports: [
@@ -29,13 +26,10 @@ import { ElectionDetailsComponent } from './election-details/election-details.co
   ],
   declarations: [
     AppComponent,
-    DashboardComponent,
-    BallotsComponent,
-    //BallotDetailComponent,
     MessagesComponent,
     CandidatesComponent,
     ElectionDetailsComponent,
-    //BallotSearchComponent
+    ReferenceComponent
   ],
   providers: [ BallotService, MessageService, Web3Service, Utils ],
   bootstrap: [ AppComponent ]

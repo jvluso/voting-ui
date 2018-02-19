@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 
-import { Candidate } from '../candidate';
-import { BallotService } from '../ballot.service';
+import { Candidate } from '../classes/candidate';
+import { Election } from '../classes/election';
+import { BallotService } from '../services/ballot.service';
+import { Web3Service } from '../web3/web3.service';
 
 @Component({
   selector: 'app-candidates',
@@ -9,23 +11,25 @@ import { BallotService } from '../ballot.service';
   styleUrls: ['./candidates.component.css']
 })
 export class CandidatesComponent implements OnInit {
-  candidates: Candidate[];
+  address: string;
+  election: Election;
 
-  constructor(private ballotService: BallotService) { }
+  constructor(
+    private web3Service: Web3Service,
+    private ballotService: BallotService) { }
 
   ngOnInit() {
-    this.getCandidates();
-    this.checkCanVote();
+
+    this.election = this.ballotService.getNullElection();
+    this.ballotService.getRecentElection().then((election) => {
+      this.election = election;
+      this.getCandidates();
+      this.checkCanVote();
+    });
   }
 
   getCandidates(): void {
-    this.ballotService.getCandidates()
-      .subscribe({
-        next: candidates => {
-          this.candidates = candidates;
-        },
-        error: err => console.log(err),
-      });
+    this.ballotService.getCandidates(this.election);
   }
 
 
@@ -38,14 +42,14 @@ export class CandidatesComponent implements OnInit {
   canVote: boolean;
 
   checkCanVote(): void {
-      this.ballotService.checkCanVote().then((res) => {
+      this.ballotService.checkCanVote(this.election).then((res) => {
         console.log(res);
         this.canVote = res;
       });
   }
 
   vote(): void {
-      this.ballotService.vote(this.selectedCandidate).then((res) => {
+      this.ballotService.vote(this.election,this.selectedCandidate).then((res) => {
         console.log(res);
         this.canVote = res;
       });
