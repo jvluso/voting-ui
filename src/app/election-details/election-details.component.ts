@@ -29,18 +29,18 @@ export class ElectionDetailsComponent implements OnInit {
   }
 
   getCandidates(): void {
-    this.ballotService.getCandidates(this.election);
+    this.ballotService.getCandidates(this.election).subscribe();
   }
 
   getElection(): void {
-    this.ballotService.getName(this.election);
+    this.ballotService.getName(this.election).subscribe();
   }
 
   winningCandidate: string;
 
   getWinningCandidate(): void {
     console.log("requestWinningCandidate");
-    this.ballotService.getWinningCandidate(this.election).then((res) => {
+    this.ballotService.getWinningCandidate(this.election).subscribe((res) => {
       console.log("getWinningCandidate");
       console.log(res);
       this.winningCandidate = res;

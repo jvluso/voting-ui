@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Observable } from 'rxjs/Observable';
-import { of } from 'rxjs/observable/of';
-import 'rxjs';
+import { Observable } from 'rxjs/Rx';
+import { map, concatMap } from 'rxjs/operators';
+import { fromPromise } from 'rxjs/observable/fromPromise';
+import { range } from 'rxjs/observable/range';
+import 'rxjs/Rx';
 import { Utils } from '../utils';
 var utils = new Utils();
 
@@ -42,44 +44,44 @@ export class BallotService {
     }
 
 
-    getName (election: Election): Promise<string> {
-      let p = new Promise<string>((resolve, reject) => {
-        this.getContract(election).then((contract) => {
-          contract.methods['electionName']().call((err,res) =>{
-            if(err){
-              resolve('');
-            }else{
-              resolve(utils.hex2a(res));
-            }
-          });
+    getName (election: Election): Observable<string> {
+      console.log(election);
+        return fromPromise(this.getContract(election)).concatMap((contract) => {
+          console.log(contract);
+          return contract.methods['electionName']().call()
+        }).map((res) => {
+          console.log(res);
+          election.name=utils.hex2a(res);
+          console.log(election.name);
+          return election.name;
         });
-      });
-      return p;
     }
 
 
 
     getCandidates(election: Election): Observable<any> {
-      console.log(election);
-        return new Observable(observer => {
-          this.getContract(election).then((contract) => {
-            console.log(contract);
-            contract.methods['size']().call((err,size) => {
-              console.log(size);
-              for(var i=0;i<size;i++){
-                contract.methods['getCandidate'](i).call((err,candidate) => {
-                  console.log(candidate);
-                  election.candidates.push({
-                    id: candidate[1],
-                    name: utils.hex2a(candidate[0])
-                  });
-                  console.log(election.candidates);
-                  observer.next(election.candidates);
-                });
-              }
-            });
-          })
+        console.log(election);
+        return fromPromise(this.getContract(election)).concatMap((contract) => {
+          console.log(contract);
+          return contract.methods['size']().call();
+        }).concatMap((size) => {
+          console.log(size);
+          return range(0,+size);
+        }).concatMap((i) => {
+          console.log(election.contract);
+          console.log(i)
+          return election.contract.methods['getCandidate'](i).call();
+        }).map((candidate) => {
+          console.log(candidate);
+          election.candidates.push({
+            id: candidate[1],
+            name: utils.hex2a(candidate[0])
+          });
+          console.log(election.candidates);
+          return election.candidates;
+
         });
+
     }
 
 
@@ -91,6 +93,7 @@ export class BallotService {
 
             this.web3Service.getContract(ABI,election.address).then((ctrct) =>{
               console.log(ctrct);
+              election.contract=ctrct;
               resolve(ctrct);
             });
         });
@@ -101,22 +104,16 @@ export class BallotService {
 
 
 
-    getWinningCandidate (election: Election): Promise<string> {
-      let p = new Promise<string>((resolve, reject) => {
-        this.getContract(election).then((contract) => {
-          console.log(contract);
-          contract.methods['getWinner']().call((err,res) =>{
-            console.log('gotWinner');
-            if(err){
-              resolve('');
-            }else{
-              resolve(utils.hex2a(res));
-            }
-          });
+
+
+    getWinningCandidate (election: Election): Observable<string> {
+        return fromPromise(this.getContract(election)).concatMap((contract) => {
+          return contract.methods['getWinner']().call()
+        }).map((res) => {
+          return res;
         });
-      });
-      return p;
     }
+
 
 
     /** GET ballots from the server */
