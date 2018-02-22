@@ -13,6 +13,7 @@ import { Election } from '../classes/election';
 import { Candidate } from '../classes/candidate';
 import { MessageService } from '../messages/message.service';
 import { Web3Service } from '../web3/web3.service';
+import { Web3ReferenceService } from './web3-reference.service';
 var Web3 = require('web3');
 var web3 = new Web3();
 
@@ -23,45 +24,50 @@ const httpOptions = {
 @Injectable()
 export class BallotService {
 
-  private ballotsUrl = 'api/ballots';  // URL to web api
+  private elections: {};
 
   constructor(
     private web3Service: Web3Service,
+    private web3ReferenceService: Web3ReferenceService,
     private messageService: MessageService) { }
 
 
 
 
 
-    getElection (address: string): Election {
-      console.log(address);
-      return {
-        address: address,
-        name: '',
-        candidates: [],
-        contract: ''
+    private getElection (address: string): any {
+      if(typeof this.elections == 'undefined'){
+          this.elections = {};
       }
+      if(typeof this.elections[address] == 'undefined'){
+          console.log("creating");
+          this.elections[address] = {};
+          this.elections[address].address = address;
+          this.elections[address].candidates = [];
+      }
+      return this.elections[address];
     }
 
 
-    getName (election: Election): Observable<string> {
-      console.log(election);
-        return fromPromise(this.getContract(election)).concatMap((contract) => {
+    getName (address: string): Observable<string> {
+      var election = this.getElection(address);
+      if(typeof election.name == 'undefined'){
+        election.name = this.getContract(address).concatMap((contract) => {
           console.log(contract);
           return contract.methods['electionName']().call()
         }).map((res) => {
-          console.log(res);
-          election.name=utils.hex2a(res);
-          console.log(election.name);
-          return election.name;
-        });
+          return utils.hex2a(res);
+        }).publishReplay(1).refCount();
+      }
+      return election.name;
     }
 
 
 
-    getCandidates(election: Election): Observable<any> {
-        console.log(election);
-        return fromPromise(this.getContract(election)).concatMap((contract) => {
+    getCandidates(address: string): Observable<any> {
+      var election = this.getElection(address);
+      if(typeof election.candidateObs == 'undefined'){
+        election.candidateObs =  this.getContract(address).concatMap((contract) => {
           console.log(contract);
           return contract.methods['size']().call();
         }).concatMap((size) => {
@@ -79,25 +85,30 @@ export class BallotService {
           });
           console.log(election.candidates);
           return election.candidates;
-
-        });
-
+        }).publishLast().refCount();
+      }
+      return election.candidateObs;
     }
 
 
 
-    getContract(election: Election): Promise<any> {
+    getContract(address: string): Observable<any> {
 
+      var election = this.getElection(address);
+      if(typeof election.contract == 'undefined'){
         let p = new Promise<any>((resolve, reject) => {
             var ABI  = [{"constant":false,"inputs":[{"name":"v","type":"uint256"}],"name":"vote","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"name","type":"bytes32"}],"name":"addCandidate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"ballots","outputs":[{"name":"voted","type":"bool"},{"name":"vote","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"candidates","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"num","type":"uint256"}],"name":"getCandidate","outputs":[{"name":"","type":"bytes32"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"n","type":"bytes32"}],"name":"setName","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"electionName","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getWinner","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"size","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"weights","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"addressList","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"v","type":"address"}],"name":"addVoter","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"s","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]
 
-            this.web3Service.getContract(ABI,election.address).then((ctrct) =>{
+            console.log(election.address);
+            this.web3ReferenceService.getContract(ABI,election.address).then((ctrct) =>{
               console.log(ctrct);
-              election.contract=ctrct;
+              this.getElection(address).contract=ctrct;
               resolve(ctrct);
             });
         });
-        return p;
+        election.contract = fromPromise(p).publishLast().refCount();
+      }
+      return election.contract;
     }
 
 
@@ -106,92 +117,65 @@ export class BallotService {
 
 
 
-    getWinningCandidate (election: Election): Observable<string> {
-        return fromPromise(this.getContract(election)).concatMap((contract) => {
+    getWinningCandidate (address: string): Observable<string> {
+      var election = this.getElection(address);
+      if(typeof election.winningCandidate == 'undefined'){
+        election.winningCandidate = this.getContract(address).concatMap((contract) => {
           return contract.methods['getWinner']().call()
         }).map((res) => {
-          return res;
-        });
-    }
-
-
-
-    /** GET ballots from the server */
-    checkCanVote (election: Election): Promise<boolean> {
-      console.log(election);
-      let p = new Promise<any>((resolve, reject) => {
-        this.getContract(election).then((contract) => {
-          console.log(contract);
-          this.web3Service.web3Instance.eth.getAccounts((err,acc) => {
-            contract.methods['vote'](0).call(
-              {
-                from: acc[0],
-                gas:4700000
-              },
-              (err,res) =>{
-              console.log(err);
-              console.log(res);
-              if(err){
-                resolve(false);
-              }else{
-                resolve(true);
-              }
-            });
-          });
-        });
-      });
-      return p;
-    }
-
-    /** GET ballots from the server */
-    vote (election: Election,choice: Candidate): Promise<boolean> {
-      let p = new Promise<any>((resolve, reject) => {
-        this.getContract(election).then((contract) => {
-          this.web3Service.web3Instance.eth.getAccounts((err,acc) => {
-            contract.methods['vote'](choice.id).send(
-              {
-                from: acc[0],
-                gas:4700000
-              },
-              (err,res) =>{
-              console.log(err);
-              console.log(res);
-              if(err){
-                resolve(false);
-              }else{
-                resolve(true);
-              }
-            });
-          });
-        });
-      });
-      return p;
-    }
-
-
-
-    getRecentElection (): Promise<Election> {
-      let p = new Promise<Election>((resolve, reject) => {
-        this.web3Service.getContractLocation().then((address) => {
-
-            resolve( {
-              address: address,
-              name: '',
-              candidates: [],
-              contract: ''
-            });
-        });
-      });
-      return p;
-    }
-
-    getNullElection (): Election {
-      return {
-        address: '',
-        name: '',
-        candidates: [],
-        contract: ''
+          return utils.hex2a(res);
+        }).publishLast().refCount();
       }
+      return election.winningCandidate;
+    }
+
+
+
+    /** GET ballots from the server */
+    checkCanVote (address: string): Observable<boolean> {
+      var election = this.getElection(address);
+      if(typeof election.canVote == 'undefined'){
+        election.canVote = this.getContract(address).concatMap((contract) => {
+          return contract.methods['vote'](0).call(
+            {
+              from: this.web3Service.web3Instance.eth.accounts[0],
+              gas:4700000
+            },(err,res) =>{
+              console.log(err);
+              console.log(res);
+              if(err){
+                return false;
+              }else{
+                return true;
+              }
+            });
+        }).publishLast().refCount();
+      }
+      return election.canVote;
+    }
+
+    /** GET ballots from the server */
+    vote (address: string,candidate: Candidate): Observable<boolean> {
+        return this.getContract(address).concatMap((contract) => {
+          return contract.methods['vote'](candidate.id).send(
+            {
+              from: this.web3Service.web3Instance.eth.accounts[0],
+              gas:4700000
+            },(err,res) =>{
+              console.log(err);
+              console.log(res);
+              if(err){
+                return false;
+              }else{
+                return true;
+              }
+            });
+        });
+    }
+
+
+    getRecentElection (): Promise<string> {
+        return this.web3ReferenceService.getContractLocation()
     }
 
 

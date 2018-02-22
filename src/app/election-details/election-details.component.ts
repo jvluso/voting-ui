@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
+import { Observable } from 'rxjs/Rx';
 import { Candidate } from '../classes/candidate';
 import { Election } from '../classes/election';
 import { BallotService } from '../services/ballot.service';
@@ -11,16 +12,16 @@ import { Web3Service } from '../web3/web3.service';
   styleUrls: ['./election-details.component.css']
 })
 export class ElectionDetailsComponent implements OnInit {
-  election: Election;
+
+  address: string;
 
   constructor(
     private web3Service: Web3Service,
     private ballotService: BallotService) { }
 
   ngOnInit() {
-    this.election = this.ballotService.getNullElection();
-    this.ballotService.getRecentElection().then((election) => {
-      this.election = election;
+    this.ballotService.getRecentElection().then((address) => {
+      this.address = address;
       this.getCandidates();
       this.getWinningCandidate();
       this.getElection();
@@ -28,21 +29,24 @@ export class ElectionDetailsComponent implements OnInit {
 
   }
 
+
+  candidates: Observable<Candidate[]>;
+
   getCandidates(): void {
-    this.ballotService.getCandidates(this.election).subscribe();
+    this.candidates = this.ballotService.getCandidates(this.address);
   }
 
+
+  electionName: Observable<string>;
+
   getElection(): void {
-    this.ballotService.getName(this.election).subscribe();
+    this.electionName = this.ballotService.getName(this.address);
   }
 
   winningCandidate: string;
 
   getWinningCandidate(): void {
-    console.log("requestWinningCandidate");
-    this.ballotService.getWinningCandidate(this.election).subscribe((res) => {
-      console.log("getWinningCandidate");
-      console.log(res);
+    this.ballotService.getWinningCandidate(this.address).subscribe((res) => {
       this.winningCandidate = res;
     });
   }

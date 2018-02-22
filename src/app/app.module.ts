@@ -9,6 +9,7 @@ import { AppRoutingModule }     from './app-routing.module';
 
 import { AppComponent }         from './app.component';
 import { BallotService }          from './services/ballot.service';
+import { Web3ReferenceService } from './services/web3-reference.service';
 import { MessageService }       from './messages/message.service';
 import { Web3Service }       from './web3/web3.service';
 import { Utils }       from './utils';
@@ -31,7 +32,13 @@ import { ReferenceComponent } from './reference/reference.component';
     ElectionDetailsComponent,
     ReferenceComponent
   ],
-  providers: [ BallotService, MessageService, Web3Service, Utils ],
+  providers: [
+    BallotService,
+    MessageService,
+    Web3Service,
+    Utils,
+    Web3ReferenceService
+  ],
   bootstrap: [ AppComponent ]
 })
 export class AppModule { }
