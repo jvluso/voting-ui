@@ -8,9 +8,9 @@ import { ElectionDetailsComponent }      from './election-details/election-detai
 
 const routes: Routes = [
   { path: '', redirectTo: '/ballots', pathMatch: 'full' },
-  { path: 'ballots', component: CandidatesComponent },
-  { path: 'reference', component: ReferenceComponent },
-  { path: 'election-details', component: ElectionDetailsComponent }
+  { path: 'ballots/:id', component: CandidatesComponent },
+  { path: 'ballots', component: ReferenceComponent },
+  { path: 'election-details/:id', component: ElectionDetailsComponent }
 ];
 
 @NgModule({
