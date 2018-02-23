@@ -9,7 +9,7 @@ import { ElectionDetailsComponent }      from './election-details/election-detai
 const routes: Routes = [
   { path: '', redirectTo: '/ballots', pathMatch: 'full' },
   { path: 'ballots/:id', component: CandidatesComponent },
-  { path: 'ballots', component: ReferenceComponent },
+  { path: 'reference', component: ReferenceComponent },
   { path: 'election-details/:id', component: ElectionDetailsComponent }
 ];
 

@@ -1,3 +1,7 @@
-<p>
-  reference works!
-</p>
+<h2>Reference</h2>
+
+<ul class="elections">
+  <li *ngFor="let election of elections | async">
+      <span class="badge" routerLink="/election-details/{{election}}">{{election}}</span> {{election}}
+  </li>
+</ul>
