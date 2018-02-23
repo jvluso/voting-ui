@@ -17,16 +17,13 @@ export class Web3Service {
 
 
 
-    initializeContract(ABI: any,contractLocation: string): Promise<any> {
-        let p = new Promise<any>((resolve, reject) => {
-          this.getWeb3().then((result) => {
+    getContract(ABI: any,contractLocation: string): Promise<any> {
+        return this.getWeb3().then((result) => {
 
             var contract = new web3.eth.Contract(ABI,contractLocation);
             console.log(contract);
-            resolve(contract);
-          });
+            return contract;
         });
-        return p;
     }
 
     getWeb3(): Promise<any> {
