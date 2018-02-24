@@ -5,6 +5,7 @@ import { interval } from 'rxjs/observable/interval';
 import { Web3ReferenceService } from '../services/web3-reference.service';
 import { Web3Service } from '../web3/web3.service';
 import { ActivatedRoute } from '@angular/router';
+import { BallotService } from '../services/ballot.service';
 
 @Component({
   selector: 'app-reference',
@@ -17,11 +18,11 @@ export class ReferenceComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private web3Service: Web3Service,
-    private web3ReferenceService: Web3ReferenceService) { }
+    private web3ReferenceService: Web3ReferenceService,
+    private ballotService: BallotService) { }
 
   ngOnInit() {
     this.refreshFields();
-    interval().subscribe(val => this.refreshFields());
   }
 
   refreshFields(): void {

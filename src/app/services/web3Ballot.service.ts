@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Observable } from 'rxjs/Rx';
+import { Observable, ReplaySubject } from 'rxjs/Rx';
 import { map, concatMap } from 'rxjs/operators';
 import { fromPromise } from 'rxjs/observable/fromPromise';
 import { range } from 'rxjs/observable/range';
@@ -65,26 +65,30 @@ export class BallotService {
 
     getCandidates(address: string): Observable<any> {
       var election = this.getElection(address);
+      console.log("getCandidates");
+      console.log(typeof election.candidateObs);
+      console.log(typeof election.candidates);
       if(typeof election.candidateObs == 'undefined'){
         election.candidateObs =  this.getContract(address).concatMap((contract) => {
           console.log(contract);
-          return contract.methods['size']().call();
-        }).concatMap((size) => {
-          console.log(size);
-          return range(0,+size);
-        }).concatMap((i) => {
-          console.log(election.contract);
-          console.log(i)
-          return election.contract.methods['getCandidate'](i).call();
-        }).map((candidate) => {
-          console.log(candidate);
-          election.candidates.push({
-            id: candidate[1],
-            name: utils.hex2a(candidate[0])
-          });
-          console.log(election.candidates);
-          return election.candidates;
-        }).publishLast().refCount();
+          return fromPromise(contract.methods['size']().call())
+            .concatMap((size) => {
+              console.log(size);
+              return range(0,+size);
+            }).concatMap((i) => {
+              console.log(election.contract);
+              console.log(i)
+              return contract.methods['getCandidate'](i).call();
+            }).map((candidate) => {
+              console.log(candidate);
+              election.candidates.push({
+                id: candidate[1],
+                name: utils.hex2a(candidate[0])
+              });
+              console.log(election.candidates);
+              return election.candidates;
+            });
+        }).publishReplay(1).refCount();
       }
       return election.candidateObs;
     }
@@ -94,17 +98,13 @@ export class BallotService {
     getContract(address: string): Observable<any> {
 
       var election = this.getElection(address);
+      console.log("getContract");
+      console.log(typeof election.contract);
       if(typeof election.contract == 'undefined'){
-        let p = new Promise<any>((resolve, reject) => {
-            var ABI  = [{"constant":false,"inputs":[{"name":"v","type":"uint256"}],"name":"vote","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"name","type":"bytes32"}],"name":"addCandidate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"ballots","outputs":[{"name":"voted","type":"bool"},{"name":"vote","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"candidates","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"num","type":"uint256"}],"name":"getCandidate","outputs":[{"name":"","type":"bytes32"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"n","type":"bytes32"}],"name":"setName","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"electionName","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getWinner","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"size","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"weights","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"addressList","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"v","type":"address"}],"name":"addVoter","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"s","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]
+        console.log("calling");
+        var ABI  = [{"constant":false,"inputs":[{"name":"v","type":"uint256"}],"name":"vote","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"name","type":"bytes32"}],"name":"addCandidate","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"ballots","outputs":[{"name":"voted","type":"bool"},{"name":"vote","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"candidates","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"num","type":"uint256"}],"name":"getCandidate","outputs":[{"name":"","type":"bytes32"},{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"n","type":"bytes32"}],"name":"setName","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"electionName","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"getWinner","outputs":[{"name":"","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"size","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"weights","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"addressList","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"v","type":"address"}],"name":"addVoter","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"inputs":[{"name":"s","type":"uint256"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"}]
 
-            console.log(election.address);
-            this.web3Service.getContract(ABI,election.address).then((ctrct) =>{
-              console.log(ctrct);
-              this.getElection(address).contract=ctrct;
-              resolve(ctrct);
-            });
-        });
+        let p = this.web3Service.getContract(ABI,election.address);
         election.contract = fromPromise(p).publishLast().refCount();
       }
       return election.contract;
@@ -156,19 +156,22 @@ export class BallotService {
     /** GET ballots from the server */
     vote (address: string,candidate: Candidate): Observable<boolean> {
         return this.getContract(address).concatMap((contract) => {
-          return contract.methods['vote'](candidate.id).send(
-            {
-              from: this.web3Service.web3Instance.eth.accounts[0],
-              gas:4700000
-            },(err,res) =>{
-              console.log(err);
-              console.log(res);
-              if(err){
-                return false;
-              }else{
-                return true;
-              }
-            });
+          return fromPromise(this.web3Service.web3Instance.eth.getAccounts()).concatMap((accounts) => {
+            console.log(accounts)
+            return contract.methods['vote'](candidate.id).send(
+              {
+                from: accounts[0],
+                gas:4700000
+              },(err,res) =>{
+                console.log(err);
+                console.log(res);
+                if(err){
+                  return false;
+                }else{
+                  return true;
+                }
+              });
+          });
         });
     }
 

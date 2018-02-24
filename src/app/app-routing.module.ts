@@ -7,7 +7,7 @@ import { ReferenceComponent }      from './reference/reference.component';
 import { ElectionDetailsComponent }      from './election-details/election-details.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/ballots', pathMatch: 'full' },
+  { path: '', redirectTo: '/reference', pathMatch: 'full' },
   { path: 'ballots/:id', component: CandidatesComponent },
   { path: 'reference', component: ReferenceComponent },
   { path: 'election-details/:id', component: ElectionDetailsComponent }

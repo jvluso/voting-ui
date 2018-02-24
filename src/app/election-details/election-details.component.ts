@@ -25,7 +25,6 @@ export class ElectionDetailsComponent implements OnInit {
   ngOnInit() {
     this.address = this.route.snapshot.paramMap.get('id');
     this.refreshFields();
-    interval().subscribe(val => this.refreshFields());
   }
 
   refreshFields(): void {
