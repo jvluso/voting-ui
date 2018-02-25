@@ -9,11 +9,11 @@ import { Web3Service } from '../web3/web3.service';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
-  selector: 'app-candidates',
-  templateUrl: './candidates.component.html',
-  styleUrls: ['./candidates.component.css']
+  selector: 'app-plurality-ballot',
+  templateUrl: './plurality-ballot.component.html',
+  styleUrls: ['./plurality-ballot.component.css']
 })
-export class CandidatesComponent implements OnInit {
+export class PluralityBallotComponent implements OnInit {
   address: string;
 
   constructor(

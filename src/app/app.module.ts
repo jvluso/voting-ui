@@ -14,7 +14,7 @@ import { MessageService }       from './messages/message.service';
 import { Web3Service }       from './web3/web3.service';
 import { Utils }       from './utils';
 import { MessagesComponent }    from './messages/messages.component';
-import { CandidatesComponent } from './candidates/candidates.component';
+import { PluralityBallotComponent } from './plurality-ballot/plurality-ballot.component';
 import { ElectionDetailsComponent } from './election-details/election-details.component';
 import { ReferenceComponent } from './reference/reference.component';
 
@@ -28,7 +28,7 @@ import { ReferenceComponent } from './reference/reference.component';
   declarations: [
     AppComponent,
     MessagesComponent,
-    CandidatesComponent,
+    PluralityBallotComponent,
     ElectionDetailsComponent,
     ReferenceComponent
   ],
