@@ -1,12 +1,7 @@
 <h2>Reference</h2>
 
 <ul class="elections">
-  <li *ngFor="let election of elections | async">
+  <li *ngFor="let election of elections">
       <span class="badge" routerLink="/election-details/{{election}}">{{election}}</span> {{election}}
   </li>
 </ul>
-
-
-<button (click)="refreshFields()">
-  refresh
-</button>

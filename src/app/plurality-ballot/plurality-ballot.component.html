@@ -1,12 +1,12 @@
-<h2>{{electionName | async}} Ballot</h2>
+<h2>{{electionName}} Ballot</h2>
 
 <ul class="candidates">
-  <li *ngFor="let candidate of candidates | async" (click)="onSelect(candidate)"
+  <li *ngFor="let candidate of candidates" (click)="onSelect(candidate)"
       [class.selected]="candidate === selectedCandidate">
       <span class="badge">{{candidate.id}}</span> {{candidate.name}}
   </li>
 </ul>
-<div *ngIf="canVote | async">
+<div *ngIf="canVote">
   <button (click)="vote()">
     vote
   </button>
@@ -16,10 +16,10 @@
   results
 </button>
 
-<button routerLink="/reference">
-  reference
+<button routerLink="/ballot/{{address}}">
+  bal
 </button>
 
-<button (click)="refreshFields()">
-  refresh
+<button routerLink="/reference">
+  reference
 </button>

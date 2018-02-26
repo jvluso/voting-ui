@@ -1,7 +1,7 @@
-<h2>{{electionName | async}}</h2>
+<h2>{{electionName}}</h2>
 
 <ul class="candidates">
-  <li *ngFor="let candidate of candidates | async"
+  <li *ngFor="let candidate of candidates"
       [class.selected]="candidate.name == winningCandidate">
       <span class="badge">{{candidate.id}}</span> {{candidate.name}}
   </li>
@@ -13,8 +13,4 @@
 
 <button routerLink="/reference">
   reference
-</button>
-
-<button (click)="refreshFields()">
-  refresh
 </button>

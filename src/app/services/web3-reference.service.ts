@@ -53,7 +53,7 @@ export class Web3ReferenceService {
           var ABI  = [{"constant":false,"inputs":[{"name":"election","type":"address"}],"name":"setRecentElection","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"elections","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"size","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"}]
 
           console.log("getContract")
-          this.web3Service.getContract(ABI,'0xb224fc9d91510341a1bbc905d7daf58074569c38').then((ctrct) =>{
+          this.web3Service.getContract(ABI,'0x28ecca9c6e41b83590e9c1ba9d937f1b4d1c39f3').then((ctrct) =>{
             console.log(ctrct);
             this.contractInstance = ctrct;
             resolve(ctrct);

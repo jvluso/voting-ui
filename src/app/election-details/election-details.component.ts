@@ -4,6 +4,7 @@ import { Observable } from 'rxjs/Rx';
 import { interval } from 'rxjs/observable/interval';
 import { Candidate } from '../classes/candidate';
 import { Election } from '../classes/election';
+import { ChangeDetectorRef } from '@angular/core';
 import { BallotService } from '../services/ballot.service';
 import { Web3Service } from '../web3/web3.service';
 import { ActivatedRoute } from '@angular/router';
@@ -20,9 +21,11 @@ export class ElectionDetailsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private web3Service: Web3Service,
+    private cdRef:ChangeDetectorRef,
     private ballotService: BallotService) { }
 
   ngOnInit() {
+    console.log("election init")
     this.address = this.route.snapshot.paramMap.get('id');
     this.refreshFields();
   }
@@ -34,17 +37,25 @@ export class ElectionDetailsComponent implements OnInit {
   }
 
 
-  candidates: Observable<Candidate[]>;
+  candidates: Candidate[];
 
   getCandidates(): void {
-    this.candidates = this.ballotService.getCandidates(this.address);
+    this.candidates = [];
+    this.ballotService.getCandidates(this.address).subscribe((res) => {
+      this.candidates = res;
+      this.cdRef.detectChanges();
+    });
   }
 
 
-  electionName: Observable<string>;
+  electionName: string;
 
   getElection(): void {
-    this.electionName = this.ballotService.getName(this.address);
+    this.electionName = "";
+    this.ballotService.getName(this.address).subscribe((res) => {
+      this.electionName = res;
+      this.cdRef.detectChanges();
+    });
   }
 
   winningCandidate: string;
@@ -52,6 +63,7 @@ export class ElectionDetailsComponent implements OnInit {
   getWinningCandidate(): void {
     this.ballotService.getWinningCandidate(this.address).subscribe((res) => {
       this.winningCandidate = res;
+      this.cdRef.detectChanges();
     });
   }
 }

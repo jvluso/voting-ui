@@ -22,7 +22,7 @@ const httpOptions = {
 };
 
 @Injectable()
-export class BallotService {
+export class PluralityBallotService {
 
   private elections: {};
 
@@ -42,55 +42,9 @@ export class BallotService {
           console.log("creating");
           this.elections[address] = {};
           this.elections[address].address = address;
-          this.elections[address].candidates = [];
       }
       return this.elections[address];
     }
-
-
-    getName (address: string): Observable<string> {
-      var election = this.getElection(address);
-      if(typeof election.name == 'undefined'){
-        election.name = this.getContract(address).concatMap((contract) => {
-          console.log(contract);
-          return contract.methods['electionName']().call()
-        }).map((res) => {
-          return utils.hex2a(res);
-        }).publishReplay(1).refCount();
-      }
-      return election.name;
-    }
-
-
-
-    getCandidates(address: string): Observable<any> {
-      var election = this.getElection(address);
-      if(typeof election.candidateObs == 'undefined'){
-        election.candidateObs =  this.getContract(address).concatMap((contract) => {
-          console.log(contract);
-          return fromPromise(contract.methods['size']().call())
-            .concatMap((size) => {
-              console.log(size);
-              return range(0,+size);
-            }).concatMap((i) => {
-              console.log(election.contract);
-              console.log(i)
-              return contract.methods['getCandidate'](i).call();
-            }).map((candidate) => {
-              console.log(candidate);
-              election.candidates.push({
-                id: candidate[1],
-                name: utils.hex2a(candidate[0])
-              });
-              console.log(election.candidates);
-              return election.candidates;
-            });
-        }).publishReplay(1).refCount();
-      }
-      return election.candidateObs;
-    }
-
-
 
     getContract(address: string): Observable<any> {
 
@@ -107,27 +61,10 @@ export class BallotService {
 
 
 
-
-
-
-
-    getWinningCandidate (address: string): Observable<string> {
-      var election = this.getElection(address);
-      if(typeof election.winningCandidate == 'undefined'){
-        election.winningCandidate = this.getContract(address).concatMap((contract) => {
-          return contract.methods['getWinner']().call()
-        }).map((res) => {
-          return utils.hex2a(res);
-        }).publishLast().refCount();
-      }
-      return election.winningCandidate;
-    }
-
-
-
     /** GET ballots from the server */
     checkCanVote (address: string): Observable<boolean> {
       var election = this.getElection(address);
+      console.log(address);
       if(typeof election.canVote == 'undefined'){
         election.canVote = this.getContract(address).concatMap((contract) => {
           return contract.methods['vote'](0).call(
@@ -143,7 +80,7 @@ export class BallotService {
                 return true;
               }
             });
-        }).publishLast().refCount();
+        }).publishLast();
       }
       return election.canVote;
     }

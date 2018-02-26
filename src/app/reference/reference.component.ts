@@ -6,6 +6,7 @@ import { Web3ReferenceService } from '../services/web3-reference.service';
 import { Web3Service } from '../web3/web3.service';
 import { ActivatedRoute } from '@angular/router';
 import { BallotService } from '../services/ballot.service';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
   selector: 'app-reference',
@@ -18,6 +19,7 @@ export class ReferenceComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private web3Service: Web3Service,
+    private cdRef:ChangeDetectorRef,
     private web3ReferenceService: Web3ReferenceService,
     private ballotService: BallotService) { }
 
@@ -30,10 +32,14 @@ export class ReferenceComponent implements OnInit {
   }
 
 
-  elections: Observable<string[]>;
+  elections: string[];
 
   getElections(): void {
-    this.elections = this.web3ReferenceService.getElections();
+    this.elections = [];
+    this.web3ReferenceService.getElections().subscribe(res => {
+      this.elections = res;
+      this.cdRef.detectChanges();
+    });
   }
 
 
