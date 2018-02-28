@@ -50,6 +50,7 @@ export class BallotService {
 
     getName (address: string): Observable<string> {
       var election = this.getElection(address);
+      console.log(election.name);
       if(typeof election.name == 'undefined'){
         election.name = this.getContract(address).concatMap((contract) => {
           console.log(contract);
@@ -101,7 +102,7 @@ export class BallotService {
 
 
         let p = this.web3Service.getContract(ABI,election.address);
-        election.contract = fromPromise(p).publishLast().refCount();
+        election.contract = fromPromise(p).publishReplay(1).refCount();
       }
       return election.contract;
     }
@@ -119,7 +120,7 @@ export class BallotService {
           return contract.methods['getWinner']().call()
         }).map((res) => {
           return utils.hex2a(res);
-        }).publishLast().refCount();
+        }).publishReplay(1).refCount();
       }
       return election.winningCandidate;
     }
@@ -130,15 +131,15 @@ export class BallotService {
 
     ballotType (address: string): Observable<string> {
       var election = this.getElection(address);
-      if(typeof election.name == 'undefined'){
-        election.name = this.getContract(address).concatMap((contract) => {
+      if(typeof election.ballotType == 'undefined'){
+        election.ballotType = this.getContract(address).concatMap((contract) => {
           console.log(contract);
           return contract.methods['ballotType']().call()
         }).map((res) => {
           return utils.hex2a(res);
         }).publishReplay(1).refCount();
       }
-      return election.name;
+      return election.ballotType;
     }
 
 

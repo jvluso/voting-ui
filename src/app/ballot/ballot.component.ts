@@ -16,6 +16,8 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class BallotComponent implements OnInit {
   address: string;
+  subscriptions: any;
+
 
   constructor(
     private route: ActivatedRoute,
@@ -28,18 +30,25 @@ export class BallotComponent implements OnInit {
     this.refreshFields();
   }
 
+  ngOnDestroy() {
+    while(this.subscriptions.length>0){
+      this.subscriptions.pop().unsubscribe();
+    }
+  }
+
   refreshFields(): void {
+    this.subscriptions = [];
     this.getBallotType();
   }
 
-  ballotType: boolean;
+  ballotType: string;
 
   getBallotType(): void {
-    this.ballotService.ballotType(this.address).subscribe((res) => {
+    this.subscriptions.push(this.ballotService.ballotType(this.address).subscribe((res) => {
       console.log(res);
-      this.ballotType = (res == "Plurality");
+      this.ballotType = res;
       this.cdRef.detectChanges();
-    });
+    }));
   }
 
 }

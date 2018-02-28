@@ -17,6 +17,7 @@ import { ActivatedRoute } from '@angular/router';
 export class ElectionDetailsComponent implements OnInit {
 
   address: string;
+  subscriptions: any;
 
   constructor(
     private route: ActivatedRoute,
@@ -29,8 +30,20 @@ export class ElectionDetailsComponent implements OnInit {
     this.address = this.route.snapshot.paramMap.get('id');
     this.refreshFields();
   }
+  ngOnChange() {
+    console.log("election init")
+    this.address = this.route.snapshot.paramMap.get('id');
+    this.refreshFields();
+  }
+
+  ngOnDestroy() {
+    while(this.subscriptions.length>0){
+      this.subscriptions.pop().unsubscribe();
+    }
+  }
 
   refreshFields(): void {
+    this.subscriptions = [];
     this.getCandidates();
     this.getWinningCandidate();
     this.getElection();
@@ -41,10 +54,10 @@ export class ElectionDetailsComponent implements OnInit {
 
   getCandidates(): void {
     this.candidates = [];
-    this.ballotService.getCandidates(this.address).subscribe((res) => {
+    this.subscriptions.push(this.ballotService.getCandidates(this.address).subscribe((res) => {
       this.candidates = res;
       this.cdRef.detectChanges();
-    });
+    }));
   }
 
 
@@ -52,18 +65,18 @@ export class ElectionDetailsComponent implements OnInit {
 
   getElection(): void {
     this.electionName = "";
-    this.ballotService.getName(this.address).subscribe((res) => {
+    this.subscriptions.push(this.ballotService.getName(this.address).subscribe((res) => {
       this.electionName = res;
       this.cdRef.detectChanges();
-    });
+    }));
   }
 
   winningCandidate: string;
 
   getWinningCandidate(): void {
-    this.ballotService.getWinningCandidate(this.address).subscribe((res) => {
+    this.subscriptions.push(this.ballotService.getWinningCandidate(this.address).subscribe((res) => {
       this.winningCandidate = res;
       this.cdRef.detectChanges();
-    });
+    }));
   }
 }

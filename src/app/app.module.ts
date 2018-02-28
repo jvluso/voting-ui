@@ -10,6 +10,7 @@ import { AppRoutingModule }     from './app-routing.module';
 import { AppComponent }         from './app.component';
 import { BallotService }          from './services/ballot.service';
 import { PluralityBallotService }          from './services/plurality-ballot.service';
+import { ApprovalBallotService }          from './services/approval-ballot.service';
 import { Web3ReferenceService } from './services/web3-reference.service';
 import { MessageService }       from './messages/message.service';
 import { Web3Service }       from './web3/web3.service';
@@ -19,6 +20,7 @@ import { PluralityBallotComponent } from './plurality-ballot/plurality-ballot.co
 import { ElectionDetailsComponent } from './election-details/election-details.component';
 import { ReferenceComponent } from './reference/reference.component';
 import { BallotComponent } from './ballot/ballot.component';
+import { ApprovalBallotComponent } from './approval-ballot/approval-ballot.component';
 
 @NgModule({
   imports: [
@@ -33,11 +35,13 @@ import { BallotComponent } from './ballot/ballot.component';
     PluralityBallotComponent,
     ElectionDetailsComponent,
     ReferenceComponent,
-    BallotComponent
+    BallotComponent,
+    ApprovalBallotComponent
   ],
   providers: [
     BallotService,
     PluralityBallotService,
+    ApprovalBallotService,
     MessageService,
     Web3Service,
     Utils,

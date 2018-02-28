@@ -1,3 +1,6 @@
-<div *ngIf="ballotType">
+<div *ngIf="ballotType == 'Plurality'">
   <app-plurality-ballot></app-plurality-ballot>
+</div>
+<div *ngIf="ballotType == 'Approval'">
+  <app-approval-ballot></app-approval-ballot>
 </div>
